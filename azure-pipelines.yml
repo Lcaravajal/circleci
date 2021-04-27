@@ -28,3 +28,20 @@ stages:
         containerRegistry: 'jfrog'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
+    - task: InvokeRESTAPI@1
+      inputs:
+        connectionType: 'connectedServiceName'
+        method: 'PUT'
+        headers: |
+          {
+            "Content-Type":"application/json"
+          }
+        body: |
+          {
+            "service": "$(System.TeamProject)",
+            "environment": "stage",
+            "tag": "$(tag)",
+            "token": "$SLACK_TOKEN"
+          }
+        urlSuffix: 'https://r2d2.split-stage.io/deployment'
+        waitForCompletion: 'false'
