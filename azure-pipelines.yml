@@ -10,6 +10,8 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  slack: '$(SLACK_TOKEN)'
+  fly: '$(FLY_ADMIN_PASS)'
 
 stages:
 - stage: Build
@@ -21,14 +23,17 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - task: Go@0
+      displayName: test
       inputs:
         command: 'test'
     - task: Docker@2
+      displayName: Build and Push
       inputs:
         containerRegistry: 'jfrog'
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
     - task: Bash@3
+      displayName: Deploy request
       inputs:
         targetType: 'inline'
-        script: 'curl --header ''Content-Type: application/json'' --request PUT --data ''{ "service": "$(System.TeamProject)", "environment": "stage", "tag": "$(tag)", "token": "$SLACK_TOKEN"}'' https://r2d2.split-stage.io/deployment'
+        script: 'curl --header ''Content-Type: application/json'' --request PUT --data ''{ "service": "$(System.TeamProject)", "environment": "stage", "tag": "$(tag)", "token": "$slack"}'' https://r2d2.split-stage.io/deployment'
